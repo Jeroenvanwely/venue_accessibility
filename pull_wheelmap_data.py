@@ -21,12 +21,17 @@ def write_to_csv(venues):
         writer.writeheader()
         writer.writerows(venues)
 
-# Remove venue is not in specified city
-def city_filter(venues, city):
-    for i, venue in enumerate(venues):
-        if venue['city'] != city:
-            del venues[i]
-    return venues
+# Function to filter venues
+def filter_venues(venues, city, remove_unlabeled):
+
+    filtered_venues = []
+    for venue in venues:
+        if remove_unlabeled and venue['wheelchair'] == 'unknown':
+            continue
+        elif city != None and venue['city'] != city:
+            continue
+        filtered_venues.append(venue)
+    return filtered_venues
 
 # Function to get data and store in list
 def get_data(api_key, per_page, limit, bbox):
@@ -45,11 +50,7 @@ def get_data(api_key, per_page, limit, bbox):
                                         limit+"&page="+str(page))
         venues += response.json()['nodes'] # Concatenate to venues list
 
-    # Filter out all venues in bbox that are not in specified city
-    if config.city != None:
-        return city_filter(venues, config.city)
-
-    return venues
+    return filter_venues(venues, config.city, config.remove_unlabeled) # Return filtered venues
 
 def main():
     
@@ -63,6 +64,7 @@ def main():
     elif config.write_to == 'csv':
         write_to_csv(venues)
 
+
 if __name__ == '__main__':
     
     # Command line arguments
@@ -72,13 +74,15 @@ if __name__ == '__main__':
     parser.add_argument('--per_page', type=str, default='500',
                         help='Venues per page. Maximum and default is 500. If you want to get all venues in bbox make sure per_page and limit is equal.')
     parser.add_argument('--limit', type=str, default='500',
-                        help='limit per page. Maximum and default is 500. If you want to get all venues in bbox make sure per_page and limit is equal.')
+                        help='Limit per page. Maximum and default is 500. If you want to get all venues in bbox make sure per_page and limit is equal.')
     parser.add_argument('--bbox', type=str, default='4.839323, 52.333451, 4.968438, 52.418032',
-                        help='lon and lat values defining a bounding box out of which to get data. Default is bbox of Amsterdam')
+                        help='Lon and lat values define a bounding box out of which to get data. Default is bbox of Amsterdam.')
     parser.add_argument('--write_to', type=str, default='csv',
                         help='File type to save data in. Can be txt or csv.')
     parser.add_argument('--city', type=str, default='Amsterdam',
                         help='City name of which venues need to be pulled. Note that bbox needs to be set correctly for this as well.')
+    parser.add_argument('--remove_unlabeled', type=bool, default=True,
+                        help='If remove_unlabeled is true, only labeled venues will be returned.')
 
     config = parser.parse_args()
     main()
