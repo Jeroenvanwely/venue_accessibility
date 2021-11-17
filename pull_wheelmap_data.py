@@ -16,7 +16,7 @@ def write_to_txt(venues):
 # Function to write venues to csv
 def write_to_csv(venues):
     fieldnames = venues[0].keys()
-    with open('countries.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('venues.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(venues)
@@ -63,7 +63,6 @@ def main():
         write_to_txt(venues)
     elif config.write_to == 'csv':
         write_to_csv(venues)
-
 
 if __name__ == '__main__':
     
